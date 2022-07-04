@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lista_telefonica_app/components/contact_grid_tile.dart';
 import 'package:lista_telefonica_app/components/contact_list_tile.dart';
 import 'package:lista_telefonica_app/models/contact.dart';
 import 'package:lista_telefonica_app/resources/strings.dart';
@@ -22,6 +23,7 @@ class _PhoneBookState extends State<PhoneBook> {
   final contacts = List<Contact>.from(contact_helper.longContactList)
     ..sort((a, b) => a.name.compareTo(b.name));
   final favorites = <Contact>[];
+  bool isGrid = false;
 
   void toggleFavorite(Contact contact) {
     setState(() {
@@ -34,14 +36,31 @@ class _PhoneBookState extends State<PhoneBook> {
     });
   }
 
+  void toggleGridMode() {
+    setState(() {
+      isGrid = !isGrid;
+    });
+  }
+
+  SliverGridDelegateWithFixedCrossAxisCount get gridDelegate =>
+      SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isGrid ? 2 : 1,
+        childAspectRatio: isGrid ? 1 : 5,
+      );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.backgroundColor,
       appBar: AppBar(
         title: const Text(Strings.appName),
         actions: [
+          IconButton(
+            onPressed: toggleGridMode,
+            icon: Icon(
+              isGrid ? Icons.list : Icons.grid_on,
+            ),
+          ),
           IconButton(
             onPressed: widget.onThemeModePressed,
             icon: Icon(
@@ -62,10 +81,17 @@ class _PhoneBookState extends State<PhoneBook> {
                     child: Text(Strings.favorites),
                   ),
                   Expanded(
-                      child: ListView.builder(itemBuilder: (context, index) {
-                    final contact = favorites[index];
-                    return buildListTile(context, index, contact);
-                  })),
+                    flex: isGrid ? 3 : 1,
+                    child: GridView.builder(
+                      key: const PageStorageKey(Strings.favorites),
+                      gridDelegate: gridDelegate,
+                      itemCount: favorites.length,
+                      itemBuilder: (context, index) {
+                        final contact = favorites[index];
+                        return buildListTile(contact);
+                      },
+                    ),
+                  ),
                 ],
                 const Padding(
                   padding: EdgeInsets.all(8.0),
@@ -73,23 +99,32 @@ class _PhoneBookState extends State<PhoneBook> {
                 ),
                 Expanded(
                   flex: 6,
-                  child: ListView.builder(
-                      itemBuilder: ((context, index) {
-                        final contact = contacts[index];
-                        return buildListTile(context, index, contact);
-                      }),
-                      itemCount: contacts.length),
+                  child: GridView.builder(
+                    key: const PageStorageKey(Strings.contacts),
+                    gridDelegate: gridDelegate,
+                    itemCount: contacts.length,
+                    itemBuilder: (context, index) {
+                      final contact = contacts[index];
+                      return buildListTile(contact);
+                    },
+                  ),
                 ),
               ],
             )
-          : const Text('Lista vazia!'),
+          : const Text(Strings.errorMessageEmptyList),
     );
   }
 
-  Widget buildListTile(BuildContext context, int index, Contact contact) {
+  Widget buildListTile(Contact contact) {
     final viewModel = ContactViewModel(contact);
-    return ContactListTile(
-        contactViewModel: viewModel,
-        onItemPressed: () => toggleFavorite(contact));
+    return isGrid
+        ? ContactGridTile(
+            contactViewModel: viewModel,
+            onItemPressed: () => toggleFavorite(contact),
+          )
+        : ContactListTile(
+            contactViewModel: viewModel,
+            onItemPressed: () => toggleFavorite(contact),
+          );
   }
 }

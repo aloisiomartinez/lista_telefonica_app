@@ -26,7 +26,7 @@ class _PhoneBookAppState extends State<PhoneBookApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: Strings.appName,
+      title: Strings.appName, 
       themeMode: currentThemeMode,
       theme: PhoneBookTheme.light,
       darkTheme: PhoneBookTheme.dark,

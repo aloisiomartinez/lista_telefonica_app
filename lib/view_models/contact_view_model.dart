@@ -9,9 +9,12 @@ class ContactViewModel {
       : name = contact.name,
         number = contact.number,
         favoriteIcon = contact.isFavorite ? Icons.star : Icons.star_outline,
-        favoriteIconColor = contact.isFavorite ? Colors.yellow : Colors.grey{
+        favoriteIconColor = contact.isFavorite ? Colors.yellow : Colors.grey {
     final url = contact.picture;
-    image = url != null ? NetworkImage(url) : null;
+    if (url != null) {
+      hasImage = true;
+      image = NetworkImage(url);
+    }
 
     final materialColor =
         Colors.primaries[Random().nextInt(Colors.primaries.length)];
@@ -30,6 +33,8 @@ class ContactViewModel {
   String identifier = '';
 
   NetworkImage? image;
+  bool hasImage = false;
+
   Color? backgroundColor;
   Color? foregroundColor;
 }
